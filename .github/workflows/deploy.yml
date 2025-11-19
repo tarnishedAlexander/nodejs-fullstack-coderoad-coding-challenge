@@ -31,19 +31,10 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-<<<<<<< HEAD
-          source: |
-            client/dist/**
-            server/**
-            .env
-          target: ~/app/
-          recursive: true
-=======
           source: "client/dist/*,server/*,server/.*,.env*"
           target: "~/app"
           overwrite: true
           strip_components: 0
->>>>>>> bc43472 (fix: some ec2 errors)
 
       - name: Restart app on EC2
         uses: appleboy/ssh-action@master
