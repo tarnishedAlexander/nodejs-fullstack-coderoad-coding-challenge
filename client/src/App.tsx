@@ -8,10 +8,6 @@ interface Item {
   description: string
 }
 
-interface ItemPayload {
-  title: string
-  description: string
-}
 
 export default function App(): JSX.Element {
   const [items, setItems] = useState<Item[]>([])
@@ -41,7 +37,7 @@ export default function App(): JSX.Element {
     // PUT YOUR CODE HERE
   }
 
-  async function removeItem(id: number): Promise<void> {
+  async function removeItem(_id: number): Promise<void> {
     if (!confirm('Delete this item?')) return
     // PUT YOUR CODE HERE
   }
