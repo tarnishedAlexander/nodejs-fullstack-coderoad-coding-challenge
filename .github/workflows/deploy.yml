@@ -1,0 +1,56 @@
+name: Deploy Fullstack Node.js App
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Build frontend (Vite + React + TypeScript)
+      - name: Install & Build Client
+        working-directory: ./client
+        run: |
+          npm ci
+          npm run build
+
+      # Install backend dependencies
+      - name: Install Server
+        working-directory: ./server
+        run: npm ci
+
+      - name: Deploy everything via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: |
+            client/dist/
+            server/
+            .env
+          target: ~/my-app/
+          strip_components: 0
+
+      - name: Restart server on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/my-app
+            cp .env server/ 2>/dev/null || true
+            pm2 restart my-app || pm2 start server/src/server.ts --name my-app --interpreter tsx
+            sudo cp -r client/dist/* /var/www/html/
